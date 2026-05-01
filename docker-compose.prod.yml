@@ -1,0 +1,27 @@
+services:
+  ops-node-api-php:
+    volumes:
+      - ./ops-node-api:/var/www
+      - ./ops-node-api/docker/php/php.prod.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+
+  ops-node-api-nginx:
+    volumes:
+      - ./ops-node-api:/var/www:ro
+      - ./ops-node-api/docker/nginx/default.prod.conf:/etc/nginx/conf.d/default.conf:ro
+
+  ops-node-front:
+    build:
+      dockerfile: docker/node/Dockerfile-PROD
+    ports:
+      - "8080:80"
+
+  ops-node-horizon-worker:
+    volumes:
+      - ./ops-node-api:/var/www
+      - ./ops-node-api/docker/php/php.prod.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"

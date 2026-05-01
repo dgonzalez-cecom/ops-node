@@ -1,0 +1,95 @@
+services:
+  ops-node-api-php:
+    build:
+      context: ./ops-node-api
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ops_node
+      DB_USERNAME: ops_node
+      DB_PASSWORD: ops_node_secret
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+    networks:
+      - ops-network
+
+  ops-node-api-nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - ops-node-api-php
+    networks:
+      - ops-network
+
+  ops-node-front:
+    build:
+      context: ./ops-node-front
+    restart: unless-stopped
+    depends_on:
+      - ops-node-api-nginx
+    networks:
+      - ops-network
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ops_node
+      MYSQL_USER: ops_node
+      MYSQL_PASSWORD: ops_node_secret
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ops-network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - ops-network
+
+  ops-node-horizon-worker:
+    build:
+      context: ./ops-node-api
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ops_node
+      DB_USERNAME: ops_node
+      DB_PASSWORD: ops_node_secret
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+    command: php artisan horizon
+    networks:
+      - ops-network
+
+volumes:
+  mysql_data:
+  redis_data:
+  front_node_modules:
+
+networks:
+  ops-network:
