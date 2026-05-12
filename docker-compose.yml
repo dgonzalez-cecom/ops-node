@@ -47,6 +47,8 @@ services:
       MYSQL_USER: ops_node
       MYSQL_PASSWORD: ops_node_secret
       MYSQL_ROOT_PASSWORD: root
+      TZ: America/Mexico_City
+    command: --default-time-zone='-06:00'
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
