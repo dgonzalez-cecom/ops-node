@@ -48,3 +48,11 @@ services:
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
+
+  ops-node-scheduler:
+    volumes:
+      - ./ops-node-api:/var/www
+      - ./ops-node-api/docker/php/php.dev.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"

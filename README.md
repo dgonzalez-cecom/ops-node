@@ -1,4 +1,6 @@
 # Docker en Desarrollo
+Ejecutar Docker Compose siempre desde la raiz del proyecto. Los archivos oficiales son `docker-compose.yml`, `docker-compose.dev.yml` y `docker-compose.prod.yml`.
+
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build --force-recreate
 
 # docker en Producción
@@ -9,6 +11,9 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 
 # Bajar produccion
 docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+
+# Levantar ops-node-scheduler
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build ops-node-scheduler
 
 # Ver los containers
 docker ps --format "table {{.Names}}\t{{.Ports}}"
@@ -49,7 +54,6 @@ scp .env dgonzalez@172.24.0.146:/home/dgonzalez/Projects/ops-node/ops-node-api
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 php artisan event:cache
 php artisan permission:cache-reset
 php artisan optimize
