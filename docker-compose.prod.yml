@@ -18,6 +18,10 @@ services:
     ports:
       - "8080:80"
 
+  mysql:
+    ports:
+      - "3306:3306"
+
   ops-node-horizon-worker:
     volumes:
       - ./ops-node-api:/var/www
