@@ -7,7 +7,11 @@ services:
     depends_on:
       - mysql
       - redis
+    env_file:
+      - .env
     environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_URL: ${APP_URL:-https://intranet-lab.goc.mx}
       ASSET_URL: ${ASSET_URL:-https://intranet-lab.goc.mx}
       TRUSTED_PROXIES: "*"
@@ -16,12 +20,15 @@ services:
       DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE:-ops_node}
       DB_USERNAME: ${DB_USERNAME:-ops_node}
-      DB_PASSWORD: ${DB_PASSWORD:-ops_node_secret}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
       CACHE_STORE: redis
       QUEUE_CONNECTION: redis
+    volumes:
+      - api_storage:/var/www/storage
+      - api_cache:/var/www/bootstrap/cache
     networks:
       - ops-network
 
@@ -32,7 +39,7 @@ services:
       - ops-node-api-php
     volumes:
       - ./ops-node-api:/var/www:ro
-      - ./ops-node-api/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ops-node-api/docker/nginx/default.prod.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       # Apache del servidor anfitrion consumira el API por localhost.
       # No se expone publicamente el contenedor.
@@ -42,17 +49,16 @@ services:
 
   ops-node-front:
     build:
+      dockerfile: docker/node/Dockerfile-PROD
       context: ./ops-node-front
       args:
-        # Recomendado: consumir el API por la misma URL publica via Apache.
-        # Ajusta el nombre de la variable si tu frontend usa otro prefijo.
-        VITE_API_URL: ${VITE_API_URL:-/api}
+        # El frontend consume el API por la misma URL publica via Apache.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
     restart: unless-stopped
     depends_on:
       - ops-node-api-nginx
     ports:
       # Apache del servidor anfitrion consumira el frontend por localhost.
-      # Cambia 80 si tu imagen de front escucha en otro puerto interno.
       - "127.0.0.1:8080:80"
     networks:
       - ops-network
@@ -60,13 +66,17 @@ services:
   mysql:
     image: mysql:8.0
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-ops_node}
       MYSQL_USER: ${DB_USERNAME:-ops_node}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-ops_node_secret}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
       TZ: America/Mexico_City
     command: --default-time-zone='-06:00'
+    ports:
+      - "127.0.0.1:3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -90,7 +100,11 @@ services:
     depends_on:
       - mysql
       - redis
+    env_file:
+      - .env
     environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_URL: ${APP_URL:-https://intranet-lab.goc.mx}
       TRUSTED_PROXIES: "*"
       DB_CONNECTION: mysql
@@ -98,13 +112,16 @@ services:
       DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE:-ops_node}
       DB_USERNAME: ${DB_USERNAME:-ops_node}
-      DB_PASSWORD: ${DB_PASSWORD:-ops_node_secret}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
       CACHE_STORE: redis
       QUEUE_CONNECTION: redis
     command: php artisan horizon
+    volumes:
+      - api_storage:/var/www/storage
+      - api_cache:/var/www/bootstrap/cache
     networks:
       - ops-network
 
@@ -117,7 +134,11 @@ services:
     depends_on:
       - mysql
       - redis
+    env_file:
+      - .env
     environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_URL: ${APP_URL:-https://intranet-lab.goc.mx}
       TRUSTED_PROXIES: "*"
       DB_CONNECTION: mysql
@@ -125,20 +146,24 @@ services:
       DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE:-ops_node}
       DB_USERNAME: ${DB_USERNAME:-ops_node}
-      DB_PASSWORD: ${DB_PASSWORD:-ops_node_secret}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
       CACHE_STORE: redis
       QUEUE_CONNECTION: redis
     command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    volumes:
+      - api_storage:/var/www/storage
+      - api_cache:/var/www/bootstrap/cache
     networks:
       - ops-network
 
 volumes:
   mysql_data:
   redis_data:
-  front_node_modules:
+  api_storage:
+  api_cache:
 
 networks:
   ops-network:
