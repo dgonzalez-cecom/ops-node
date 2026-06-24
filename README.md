@@ -14,6 +14,9 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml down
 
 # Levantar ops-node-scheduler
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build ops-node-scheduler
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build mysql
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build ops-node-api-nginx
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build redis
 
 # Ver los containers
 docker ps --format "table {{.Names}}\t{{.Ports}}"
@@ -22,6 +25,9 @@ docker ps --format "table {{.Names}}\t{{.Ports}}"
 # Para QA, si ops-node-front corre con Docker Compose, reinícialo así desde la raíz del proyecto:
 
 docker compose -f docker-compose.yml -f docker-compose.dev.yml restart ops-node-front
+docker compose -f docker-compose.yml -f docker-compose.dev.yml restart ops-node-api
+docker compose -f docker-compose.yml -f docker-compose.dev.yml restart redis
+docker compose -f docker-compose.yml -f docker-compose.dev.yml restart ops-node-horizon-worker
 
 
 # Los cambios incluyen nuevas dependencias o cambios en package.json, reconstruir el contenedor:
@@ -32,6 +38,9 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build mys
 # Ambiente productivo:
 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build ops-node-front
+
+# Conectarse al servicio php
+docker compose exec ops-node-api-php sh
 
 # Para revisar logs:
 
@@ -62,3 +71,45 @@ php artisan optimize
 
 Acces server DB
 docker compose exec mysql mysql -u root -p
+
+# LOAD DATABASE
+docker compose exec -T service_name_mysql mysql -u root -pMipass namedb < C:\path\file.sql
+
+export COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml
+
+# From QA
+git checkout main
+git fetch origin
+git reset --hard origin/main
+git clean -fd
+
+# Evitar falsos cambios en Linux
+git config core.fileMode false
+
+# Server DEV
+  API: http://localhost:8000
+ FRONT: http://localhost:5173
+# Server QA UBUNTU SERVER
+  FQDN: intranet-lab.goc.mx
+   API: http://172.24.0.146:8000
+ FRONT: http://172.24.0.146:5173
+COURSE: http://172.24.0.146:5173/courses/login
+COURSE_ENROLLED: http://172.24.0.146:5173/courses/enrollments?payroll_id=1234&source=fingerprint
+
+# Server QA DEBIAN
+  API: http://172.16.0.243:8000
+FRONT: http://172.16.0.243:5173
+
+ssh doroteo@172.16.0.243
+# Server PROD
+
+
+# Arquitecura with Apache
+ops-node/
+├── docker-compose.yml
+├── docker-compose.dev.yml
+├── docker-compose.apache-proxy.yml
+├── docker/
+│   └── nginx/
+│       └── default.conf              ← reemplaza o ajusta este archivo
+└── apache-ops-node-vhost.conf        ← NO va dentro de Docker
