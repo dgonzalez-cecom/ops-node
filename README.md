@@ -4,6 +4,7 @@ Ejecutar Docker Compose siempre desde la raiz del proyecto. Los archivos oficial
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build --force-recreate
 
 # docker en Producción
+docker compose -f docker-compose.yml -f docker-compose.apache-proxy.yml up -d --build
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 # Bajar desarrollo
@@ -11,12 +12,14 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 
 # Bajar produccion
 docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+docker compose -f docker-compose.yml -f docker-compose.apache-proxy.yml down
 
 # Levantar ops-node-scheduler
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build ops-node-scheduler
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build mysql
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build ops-node-api-nginx
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build redis
+docker compose -f docker-compose.yml -f docker-compose.apache-proxy.yml up -d --build mysql
 
 # Ver los containers
 docker ps --format "table {{.Names}}\t{{.Ports}}"
@@ -28,6 +31,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml restart ops-node-
 docker compose -f docker-compose.yml -f docker-compose.dev.yml restart ops-node-api
 docker compose -f docker-compose.yml -f docker-compose.dev.yml restart redis
 docker compose -f docker-compose.yml -f docker-compose.dev.yml restart ops-node-horizon-worker
+docker compose -f docker-compose.yml -f docker-compose.apache-proxy.yml restart mysql
 
 
 # Los cambios incluyen nuevas dependencias o cambios en package.json, reconstruir el contenedor:
@@ -113,3 +117,7 @@ ops-node/
 │   └── nginx/
 │       └── default.conf              ← reemplaza o ajusta este archivo
 └── apache-ops-node-vhost.conf        ← NO va dentro de Docker
+
+# TIPS GIT
+Descargar repositorio remoto y cambiarte a la rama
+$ git switch -c feature/reverse-proxy origin/feature/reverse-proxy
