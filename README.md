@@ -76,6 +76,9 @@ php artisan optimize
 Acces server DB
 docker compose exec mysql mysql -u root -p
 
+2. Desde server anfitrion
+mysql -u root -p
+
 # LOAD DATABASE
 docker compose exec -T service_name_mysql mysql -u root -pMipass namedb < C:\path\file.sql
 

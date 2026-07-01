@@ -4,8 +4,10 @@ services:
       context: ./ops-node-api
       dockerfile: docker/php/Dockerfile
     restart: unless-stopped
+    extra_hosts:
+      "host.docker.internal:host-gateway"
     depends_on:
-      - mysql
+      # - mysql
       - redis
     env_file:
       - .env
@@ -16,7 +18,7 @@ services:
       ASSET_URL: ${ASSET_URL:-https://intranet-lab.goc.mx}
       TRUSTED_PROXIES: "*"
       DB_CONNECTION: mysql
-      DB_HOST: mysql
+      DB_HOST: ${DB_HOST:-mysql}
       DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE:-ops_node}
       DB_USERNAME: ${DB_USERNAME:-ops_node}
@@ -64,7 +66,7 @@ services:
       - ops-network
 
   mysql:
-    image: mysql:8.0.36
+    image: mysql:8.0
     restart: unless-stopped
     env_file:
       - .env
