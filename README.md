@@ -20,7 +20,8 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build mys
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build ops-node-api-nginx
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build redis
 docker compose -f docker-compose.yml -f docker-compose.apache-proxy.yml up -d --build mysql
-
+docker compose -f docker-compose.yml -f docker-compose.apache-proxy.yml up -d --build ops-node-api-php
+docker compose -f docker-compose.yml -f docker-compose.apache-proxy.yml up -d --build ops-node-api-nginx
 # Ver los containers
 docker ps --format "table {{.Names}}\t{{.Ports}}"
 
@@ -46,7 +47,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build op
 # Conectarse al servicio php
 docker compose exec ops-node-api-php sh
 
-# Para revisar logs:
+# Para revisar logs
 
 docker compose logs -f --tail=100 ops-node-front
 Si el problema es cache del navegador o Vite, prueba:
